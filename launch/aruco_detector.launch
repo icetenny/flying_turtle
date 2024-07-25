@@ -1,6 +1,6 @@
 <launch>
     <param name="turtlebot_aruco_id" value="971" />
     <param name="target_aruco_id" value="212" />
-    <param name="camera_index " value="2" />
+    <param name="camera_index " value="0" />
     <node name="aruco_detector" pkg="flying_turtle" type="aruco_distance.py" output="screen" />
 </launch>

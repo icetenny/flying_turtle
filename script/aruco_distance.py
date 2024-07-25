@@ -36,9 +36,9 @@ def main():
     width2distance_ratio = 91 / 67  # Ratio of width to distance of cam
 
     # Get ArUco IDs from ROS parameters
-    known_distance = rospy.get_param('/drone_height', 1.5)  # Known distance from camera to the plane of the points
-    turtlebot_aruco_id = rospy.get_param('/turtlebot_aruco_id', 971)
-    target_aruco_id = rospy.get_param('/target_aruco_id', 212)
+    known_distance = rospy.get_param('/flying_turtle/drone_height', 1.5)  # Known distance from camera to the plane of the points
+    turtlebot_aruco_id = rospy.get_param('/flying_turtle//turtlebot_aruco_id', 971)
+    target_aruco_id = rospy.get_param('/flying_turtle//target_aruco_id', 212)
 
     # Initialize the detector parameters using default values
     parameters = aruco.DetectorParameters()
