@@ -47,6 +47,7 @@ parameters.minMarkerDistanceRate = 0.05
 
 # Load the dictionary that was used to generate the markers.
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+aruco_detector = aruco.detectMarkers(aruco_dict, parameters)
 
 # Start the video capture
 cap = cv2.VideoCapture(chosen_camera)
@@ -65,7 +66,7 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect the markers in the image
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    corners, ids, rejectedImgPoints = aruco_detector.detectMarkers(gray)
 
     # Draw the detected markers on the frame
     if ids is not None:

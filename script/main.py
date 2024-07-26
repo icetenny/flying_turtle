@@ -42,35 +42,36 @@ class FlyingTurtle():
     def markers_callback(self, data: ArucoMarkers):
         new_marker_dict = dict()
         for marker in data.marker_list:
-            if marker.id == self.turtlebot_aruco_id:
-                self.turtlebot_marker = marker
-            else:
-                new_marker_dict[marker.id] = marker
+            new_marker_dict[marker.id] = marker
+
         self.target_markers_dict = new_marker_dict
         # print(self.detected_markers_dict)
 
-        target_marker = list(self.target_markers_dict.values())[0]
+        if self.turtlebot_aruco_id in new_marker_dict:
+            self.turtlebot_marker = new_marker_dict.get(self.turtlebot_aruco_id)
 
-        dW, dH, real_distance = self.calculate_real_distance(self.turtlebot_marker, target_marker)
-        print(dW, dH, real_distance)
+            target_marker = list(self.target_markers_dict.values())[0]
+
+            dW, dH, real_distance = self.calculate_real_distance(self.turtlebot_marker, target_marker)
+            print(dW, dH, real_distance)
 
 
-        # Transform goal position to account for turtlebot's orientation
-        x_goal = dW * np.cos(target_marker.z_rotation) - dH * np.sin(target_marker.z_rotation)
-        y_goal = dW * np.sin(target_marker.z_rotation) + dH * np.cos(target_marker.z_rotation)
+            # Transform goal position to account for turtlebot's orientation
+            x_goal = dW * np.cos(target_marker.z_rotation) - dH * np.sin(target_marker.z_rotation)
+            y_goal = dW * np.sin(target_marker.z_rotation) + dH * np.cos(target_marker.z_rotation)
 
-        # Publish the goal
-        goal = PoseStamped()
-        goal.header.stamp = rospy.Time.now()
-        goal.header.frame_id = "map"
+            # Publish the goal
+            goal = PoseStamped()
+            goal.header.stamp = rospy.Time.now()
+            goal.header.frame_id = "map"
 
-        goal.pose.position.x = x_goal
-        goal.pose.position.y = y_goal
-        goal.pose.orientation.z = np.sin(target_marker.z_rotation / 2)
-        goal.pose.orientation.w = np.cos(target_marker.z_rotation / 2)
+            goal.pose.position.x = x_goal
+            goal.pose.position.y = y_goal
+            goal.pose.orientation.z = np.sin(target_marker.z_rotation / 2)
+            goal.pose.orientation.w = np.cos(target_marker.z_rotation / 2)
 
-        self.goal_pub.publish(goal)
-        print("Publishing Goal...........")
+            self.goal_pub.publish(goal)
+            print("Publishing Goal...........")
 
     def calculate_real_distance(self, marker1: ArucoMarker, marker2: ArucoMarker):
 
