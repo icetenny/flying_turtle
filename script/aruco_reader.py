@@ -9,6 +9,38 @@ import math
 import numpy as np
 from flying_turtle.msg import ArucoMarker, ArucoMarkers, Point
 
+def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, dist_coeffs):
+    # Define the 3D coordinates of the marker corners in its own coordinate system
+    # Assuming the marker is centered at the origin
+    half_marker_length = marker_length / 2.0
+    obj_points = np.array([
+        [-half_marker_length,  half_marker_length, 0],
+        [ half_marker_length,  half_marker_length, 0],
+        [ half_marker_length, -half_marker_length, 0],
+        [-half_marker_length, -half_marker_length, 0]
+    ], dtype=np.float32)
+
+    # Initialize lists to hold rotation and translation vectors
+    rvecs = []
+    tvecs = []
+
+    # Loop through each detected marker
+    for corner in corners:
+        # Solve PnP to get rotation and translation vectors
+        ret, rvec, tvec = cv2.solvePnP(obj_points, corner, camera_matrix, dist_coeffs)
+        if ret:
+            rvecs.append(rvec)
+            tvecs.append(tvec)
+
+    rmat = cv2.Rodrigues(rvecs[0])[0]
+
+    # Extract the rotation angle in radians around the z-axis
+    theta = np.arctan2(rmat[1, 0], rmat[0, 0])
+
+    # Convert the angle to degrees
+    angle_deg = np.degrees(theta)
+
+    return angle_deg
 
 def main():
     rospy.init_node("aruco_reader", anonymous=True)
@@ -78,19 +110,20 @@ def main():
                     point = Point(x=coord_corner[0], y=coord_corner[1])
                     detected_aruco.corners.append(point)
 
-                # Estimate pose of each marker
-                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(id_corners, 0.05, camera_matrix, dist_coeffs)
-                
-                # Draw axis for the marker
-                cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.03)
-                # Convert rotation vector to rotation matrix
-                rmat = cv2.Rodrigues(rvec[0])[0]
+                # # Estimate pose of each marker
+                # rvec, tvec, _ = aruco.estimatePoseSingleMarkers(id_corners, 0.05, camera_matrix, dist_coeffs)
+                # # Draw axis for the marker
+                # # cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.03)
+                # # Convert rotation vector to rotation matrix
+                # rmat = cv2.Rodrigues(rvec[0])[0]
 
-                # Extract the rotation angle in radians around the z-axis
-                theta = np.arctan2(rmat[1, 0], rmat[0, 0])
+                # # Extract the rotation angle in radians around the z-axis
+                # theta = np.arctan2(rmat[1, 0], rmat[0, 0])
 
-                # Convert the angle to degrees
-                angle_deg = np.degrees(theta)
+                # # Convert the angle to degrees
+                # angle_deg = np.degrees(theta)
+
+                angle_deg = estimate_pose_single_markers_angle(id_corners, 0.05, camera_matrix, dist_coeffs)
 
                 detected_aruco.z_rotation = angle_deg
 
@@ -98,7 +131,7 @@ def main():
                 cv2.putText(frame, f'Z-Angle: {angle_deg:.2f}', 
                             (int(id_corners[0][0][0]), int(id_corners[0][0][1]) - 10), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-
+                
                 aruco_list.marker_list.append(detected_aruco)
 
             print(aruco_list.marker_list)
