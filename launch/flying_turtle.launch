@@ -6,7 +6,7 @@
   <arg name="run_navigation" default="true" />
   
   <group if="$(arg run_navigation)">
-    <arg name="map_file" default="$(find final)/maps/map_1.yaml" />
+    <!-- <arg name="map_file" default="$(find final)/maps/map_1.yaml" /> -->
     
     <!-- Turtlebot3 -->
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
@@ -38,7 +38,7 @@
     <param name="camera_index " value="0" />
     <node ns="/flying_turtle" name="aruco_reader" pkg="flying_turtle" type="aruco_reader.py"
       output="screen" />
-    <node ns="/flying_turtle" name="main" pkg="flying_turtle" type="main.py" output="screen" />
+    <node ns="/flying_turtle" name="markers_to_path" pkg="flying_turtle" type="markers_to_path.py" output="screen" />
   </group>
 
 </launch>

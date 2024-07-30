@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import Int32, Bool, String, Float32, Header
+from std_msgs.msg import Int32, Bool, String, Float32, Header, Int32MultiArray
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 import cv2
 import cv2.aruco as aruco
@@ -42,7 +42,33 @@ def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, di
 
     return angle_deg
 
+def path_sequence_callback(data):
+    global path_sequence
+    path_sequence = data
+
+def plot_route(path_sequence: ArucoMarkers, frame):
+    marker_list = path_sequence.marker_list
+
+    if marker_list:
+        # Plot points
+        # for point, coor in coordinates.items():
+        #     cv2.circle(frame, (coor[0], coor[1]), 5, (255, 0, 0), -1)
+        # for i, seq in enumerate(path_sequence[:-1]):
+        #     coord = marker_list[seq][0]
+        #     cv2.putText(frame, str(i), (coord.x, coord.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
+
+        # Plot path
+        for i in range(len(marker_list) - 1):
+            start_point = marker_list[i].corners[0]
+            end_point = marker_list[i+1].corners[0]
+            cv2.putText(frame, str(i), (start_point.x, start_point.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(frame, (start_point.x, start_point.y), (end_point.x, end_point.y), (0, 0, 255), 2)
+
+        return frame
+
 def main():
+    global path_sequence
+    path_sequence = ArucoMarkers()
     rospy.init_node("aruco_reader", anonymous=True)
 
     resolution = (1024, 576)  # Resolution of the camera
@@ -79,6 +105,9 @@ def main():
     
     goal_pub = rospy.Publisher('/flying_turtle/detected_aruco', ArucoMarkers, queue_size=10)
 
+    rospy.Subscriber(
+        '/flying_turtle/path_sequence', ArucoMarkers, path_sequence_callback)
+
 
     rate = rospy.Rate(10) # 10hz
 
@@ -107,7 +136,7 @@ def main():
             for id, id_corners in zip(ids.flatten(), corners):
                 detected_aruco = ArucoMarker(id=id)
                 for coord_corner in id_corners[0]:
-                    point = Point(x=coord_corner[0], y=coord_corner[1])
+                    point = Point(x=int(coord_corner[0]), y=int(coord_corner[1]))
                     detected_aruco.corners.append(point)
 
                 # # Estimate pose of each marker
@@ -132,9 +161,10 @@ def main():
                             (int(id_corners[0][0][0]), int(id_corners[0][0][1]) - 10), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
                 
+                plot_route(path_sequence=path_sequence, frame=frame)
                 aruco_list.marker_list.append(detected_aruco)
 
-            print(aruco_list.marker_list)
+            # print(aruco_list.marker_list)
 
             goal_pub.publish(aruco_list)
 
