@@ -39,6 +39,8 @@
     <node ns="/flying_turtle" name="aruco_reader" pkg="flying_turtle" type="aruco_reader.py"
       output="screen" />
     <node ns="/flying_turtle" name="markers_to_path" pkg="flying_turtle" type="markers_to_path.py" output="screen" />
+    <node ns="/flying_turtle" name="main" pkg="flying_turtle" type="main.py" output="screen" />
+
   </group>
 
 </launch>
