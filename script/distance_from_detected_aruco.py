@@ -53,8 +53,10 @@ def calculate_real_distance(marker1: ArucoMarker, marker2: ArucoMarker, w2h_rati
 
     return dW, dH, real_distance
 
+
 def markers_callback(data: ArucoMarkers):
     print(data.marker_list)
+
 
 def main():
     rospy.init_node("aruco_distance", anonymous=True)
@@ -68,9 +70,8 @@ def main():
     turtlebot_aruco_id = rospy.get_param('/turtlebot_aruco_id', 971)
     target_aruco_id = rospy.get_param('/target_aruco_id', 212)
 
-
     rospy.Subscriber(
-            '/flying_turtle/detected_aruco', ArucoMarkers, markers_callback)
+        '/flying_turtle/detected_aruco', ArucoMarkers, markers_callback)
 
     # goal_pub = rospy.Publisher(
     #     '/move_base_simple/goal', PoseStamped, queue_size=10)

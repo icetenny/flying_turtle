@@ -8,6 +8,8 @@ import cv2.aruco as aruco
 import math
 import numpy as np
 from flying_turtle.msg import *
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 
 class FlyingTurtle():
@@ -22,43 +24,45 @@ class FlyingTurtle():
         self.drone_height = 1.5
         self.turtlebot_aruco_id = rospy.get_param('/turtlebot_aruco_id', 971)
 
-        self.target_markers_dict = dict()
+        self.goal_sequence = []
         self.turtlebot_marker = ArucoMarker()
 
+        rospy.Subscriber(
+            '/flying_turtle/path_sequence', ArucoMarkers, self.path_sequence_callback)
 
         rospy.Subscriber(
-                '/flying_turtle/detected_aruco', ArucoMarkers, self.markers_callback)
-        
-        rospy.Subscriber(
-                '/flying_turtle/drone_height', Float32, self.height_callback)
+            '/flying_turtle/drone_height', Float32, self.height_callback)
 
         self.goal_pub = rospy.Publisher(
             '/move_base_simple/goal', PoseStamped, queue_size=10)
-    
+
     def height_callback(self, data):
         self.drone_height = data.data
 
+    def path_sequence_callback(self, data: ArucoMarkers):
+        marker_list = data.marker_list
 
-    def markers_callback(self, data: ArucoMarkers):
-        new_marker_dict = dict()
-        for marker in data.marker_list:
-            new_marker_dict[marker.id] = marker
+        if len(marker_list) <= 2:
+            print("Invalid Goal")
+            return
 
-        self.target_markers_dict = new_marker_dict
-        # print(self.detected_markers_dict)
+        turtlebot_marker = marker_list[0]
 
-        if self.turtlebot_aruco_id in new_marker_dict:
-            self.turtlebot_marker = new_marker_dict.get(self.turtlebot_aruco_id)
+        if turtlebot_marker.id != self.turtlebot_aruco_id:
+            print("What?")
+            return
 
-            target_marker = list(self.target_markers_dict.values())[0]
+        for goal_marker in turtlebot_marker[1:-1]:
 
-            dW, dH, real_distance = self.calculate_real_distance(self.turtlebot_marker, target_marker)
+            dW, dH, real_distance = self.calculate_real_distance(
+                self.turtlebot_marker, goal_marker)
             print(dW, dH, real_distance)
 
-
             # Transform goal position to account for turtlebot's orientation
-            x_goal = dW * np.cos(target_marker.z_rotation) - dH * np.sin(target_marker.z_rotation)
-            y_goal = dW * np.sin(target_marker.z_rotation) + dH * np.cos(target_marker.z_rotation)
+            x_goal = dW * np.cos(self.turtlebot_marker.z_rotation) - \
+                dH * np.sin(self.turtlebot_marker.z_rotation)
+            y_goal = dW * np.sin(self.turtlebot_marker.z_rotation) + \
+                dH * np.cos(self.turtlebot_marker.z_rotation)
 
             # Publish the goal
             goal = PoseStamped()
@@ -67,11 +71,14 @@ class FlyingTurtle():
 
             goal.pose.position.x = x_goal
             goal.pose.position.y = y_goal
-            goal.pose.orientation.z = np.sin(target_marker.z_rotation / 2)
-            goal.pose.orientation.w = np.cos(target_marker.z_rotation / 2)
+            goal.pose.orientation.z = 1
+            goal.pose.orientation.w = 1
+            # goal.pose.orientation.z = np.sin(goal_marker.z_rotation / 2)
+            # goal.pose.orientation.w = np.cos(goal_marker.z_rotation / 2)
 
-            self.goal_pub.publish(goal)
-            print("Publishing Goal...........")
+            # self.goal_pub.publish(goal)
+            self.goal_sequence.append(goal)
+            # print("Publishing Goal...........")
 
     def calculate_real_distance(self, marker1: ArucoMarker, marker2: ArucoMarker):
 
@@ -85,7 +92,7 @@ class FlyingTurtle():
 
         # Real-life width and height at the known distance
         real_width = self.drone_height * self.width2distance_ratio
-        real_height = self.drone_height * self.width2distance_ratio/ ar
+        real_height = self.drone_height * self.width2distance_ratio / ar
 
         dW = (px2-px1) / pxW * real_width
         dH = (py2 - py1) / pxH * real_height
@@ -95,7 +102,24 @@ class FlyingTurtle():
 
         return dW, dH, real_distance
 
+    def move_to_goal(x, y, w):
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        client.wait_for_server()
 
+        goal = MoveBaseGoal()
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.pose.position.x = x
+        goal.target_pose.pose.position.y = y
+        goal.target_pose.pose.orientation.w = w
+
+        client.send_goal(goal)
+        wait = client.wait_for_result()
+        if not wait:
+            rospy.logerr("Action server not available!")
+            rospy.signal_shutdown("Action server not available!")
+        else:
+            return client.get_result()
 
 
 def main():
@@ -104,19 +128,18 @@ def main():
     rate = rospy.Rate(10)  # 10hz
 
     while not rospy.is_shutdown():
-        x, y, rz, rw = 0, 0, 0, 0
-        pub_goal = PoseStamped()
-        pub_goal.header.stamp = rospy.Time.now()
-        pub_goal.header.frame_id = "map"
 
-        pub_goal.pose.position.x = x
-        pub_goal.pose.position.y = y
+        if myturtle.goal_sequence:
+            for goal in myturtle.goal_sequence:
+                result = myturtle.move_to_goal(
+                    goal.pose.position.x, goal.pose.position.y, goal.pose.orientation.w)
+                if result:
+                    rospy.loginfo("Goal execution done!")
+                else:
+                    rospy.loginfo("Failed to reach goal")
 
-        pub_goal.pose.orientation.z = rz
-        pub_goal.pose.orientation.w = rw
-
-        # goal_pub.publish(pub_goal)
         rate.sleep()
+
     rospy.spin()
 
 

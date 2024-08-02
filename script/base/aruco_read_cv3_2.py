@@ -3,6 +3,7 @@ import cv2.aruco as aruco
 import math
 import numpy as np
 
+
 def list_cameras():
     arr = []
     for index in range(10):
@@ -31,6 +32,7 @@ def list_cameras():
             return arr[cam_index]
     # return arr
 
+
 def calculate_real_distance(px1, py1, px2, py2, w2h_ratio, resolution, known_height):
     # Unpack resolution
     pxW, pxH = resolution
@@ -46,7 +48,7 @@ def calculate_real_distance(px1, py1, px2, py2, w2h_ratio, resolution, known_hei
     dH = (py2 - py1) / pxH * real_height
 
     # Calculate real-life distance between the two points
-    real_distance = math.sqrt(dW**2 + dH **2)
+    real_distance = math.sqrt(dW**2 + dH ** 2)
 
     return dW, dH, real_distance
 
@@ -92,17 +94,19 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect the markers in the image
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(
+        gray, aruco_dict, parameters=parameters)
 
     # Draw the detected markers on the frame
     if ids is not None:
         corners_dict = dict(zip(ids.flatten(), corners))
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
-        
+
         if turtlebot_aruco_id in corners_dict and target_aruco_id in corners_dict:
             turtlebot_corner_coord = corners_dict[turtlebot_aruco_id][0][0]
             target_corner_coord = corners_dict[target_aruco_id][0][0]
-            ttb2target_distance = calculate_real_distance(*turtlebot_corner_coord, *target_corner_coord, w2h_ratio=width2distance_ratio, resolution=resolution, known_height=known_distance)
+            ttb2target_distance = calculate_real_distance(
+                *turtlebot_corner_coord, *target_corner_coord, w2h_ratio=width2distance_ratio, resolution=resolution, known_height=known_distance)
             print("Estimated distance: ", ttb2target_distance)
 
     # Display the resulting frame

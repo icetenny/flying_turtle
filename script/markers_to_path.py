@@ -13,8 +13,10 @@ import math
 import numpy as np
 from flying_turtle.msg import ArucoMarker, ArucoMarkers, Point
 
-def get_distance(coord1:Point, coord2:Point):
+
+def get_distance(coord1: Point, coord2: Point):
     return int(math.sqrt((coord2.x - coord1.x) ** 2 + (coord2.y - coord1.y) ** 2))
+
 
 def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
     # Sample location
@@ -24,8 +26,8 @@ def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
 
     distance_matrix = []
 
-    from_marker : ArucoMarker
-    to_marker : ArucoMarker
+    from_marker: ArucoMarker
+    to_marker: ArucoMarker
 
     for i, from_marker in enumerate(marker_list.marker_list):
         row = []
@@ -37,9 +39,9 @@ def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
         coor.append([from_marker.corners[0].x, from_marker.corners[0].y])
 
         for to_marker in marker_list.marker_list:
-            row.append(get_distance(from_marker.corners[0], to_marker.corners[0]))
+            row.append(get_distance(
+                from_marker.corners[0], to_marker.corners[0]))
         distance_matrix.append(row)
-
 
     # Create data model
     data = {
@@ -49,6 +51,7 @@ def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
         "coordinates": coor,
     }
     return data
+
 
 def print_solution(data, manager, routing, solution):
     """Prints solution on console."""
@@ -74,24 +77,27 @@ def print_solution(data, manager, routing, solution):
     # print(f"Maximum of the route distances: {max_route_distance}m")
     return route
 
+
 def plot_route(data, route, frame):
     coordinates = data["coordinates"]
 
     # Plot points
     for point, coor in coordinates.items():
         cv2.circle(frame, (coor[0], coor[1]), 5, (255, 0, 0), -1)
-        cv2.putText(frame, str(point), (coor[0], coor[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, str(
+            point), (coor[0], coor[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
 
     # Plot path
     for i in range(len(route) - 1):
         start_point = coordinates[route[i]]
         end_point = coordinates[route[i + 1]]
-        cv2.line(frame, (start_point[0], start_point[1]), (end_point[0], end_point[1]), (0, 0, 255), 2)
+        cv2.line(frame, (start_point[0], start_point[1]),
+                 (end_point[0], end_point[1]), (0, 0, 255), 2)
 
     return frame
 
 
-def markers_to_path_callback(msg:ArucoMarkers):
+def markers_to_path_callback(msg: ArucoMarkers):
     global goal_pub
     """Entry point of the program."""
     # Instantiate the data problem.
@@ -110,7 +116,8 @@ def markers_to_path_callback(msg:ArucoMarkers):
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
-    distance_callback = lambda from_index, to_index : data["distance_matrix"][manager.IndexToNode(from_index)][manager.IndexToNode(to_index)]
+    def distance_callback(from_index, to_index): return data["distance_matrix"][manager.IndexToNode(
+        from_index)][manager.IndexToNode(to_index)]
 
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
 
@@ -141,12 +148,9 @@ def markers_to_path_callback(msg:ArucoMarkers):
         for r in route:
             pub_route.marker_list.append(msg.marker_list[r])
         goal_pub.publish(pub_route)
-        
+
     else:
         print("No solution found !")
-
-    
-
 
 
 def main():
@@ -154,13 +158,12 @@ def main():
     rospy.init_node("markers_to_path", anonymous=True)
 
     rospy.Subscriber(
-                '/flying_turtle/detected_aruco', ArucoMarkers, markers_to_path_callback)
+        '/flying_turtle/detected_aruco', ArucoMarkers, markers_to_path_callback)
 
     goal_pub = rospy.Publisher(
         '/flying_turtle/path_sequence', ArucoMarkers, queue_size=10)
 
-    rate = rospy.Rate(10) # 10hz
-
+    rate = rospy.Rate(10)  # 10hz
 
     while not rospy.is_shutdown():
         rate.sleep()

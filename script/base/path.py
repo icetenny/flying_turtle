@@ -3,23 +3,26 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import matplotlib.pyplot as plt
 
+
 def DistanceMatrix(x1, y1, x2, y2):
     return int(math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
 
+
 def create_data_model(depot_point):
     # Sample location
-    coor = {0: (10, 300), 
-            1: (300, 200), 
-            2: (155, 30), 
-            3: (400, 450), 
-            4: (250, 250), 
+    coor = {0: (10, 300),
+            1: (300, 200),
+            2: (155, 30),
+            3: (400, 450),
+            4: (250, 250),
             5: (375, 120)}
 
     distance_matrix = []
     for from_node in coor:
         row = []
         for to_node in coor:
-            row.append(DistanceMatrix(coor[from_node][0], coor[from_node][1], coor[to_node][0], coor[to_node][1]))
+            row.append(DistanceMatrix(
+                coor[from_node][0], coor[from_node][1], coor[to_node][0], coor[to_node][1]))
         distance_matrix.append(row)
 
     # Create data model
@@ -31,6 +34,7 @@ def create_data_model(depot_point):
     }
     print("Data model created:")
     return data
+
 
 def print_solution(data, manager, routing, solution):
     """Prints solution on console."""
@@ -57,6 +61,7 @@ def print_solution(data, manager, routing, solution):
     print(f"Maximum of the route distances: {max_route_distance}m")
     return route
 
+
 def plot_route(data, route):
     coordinates = data["coordinates"]
     fig, ax = plt.subplots()
@@ -72,9 +77,11 @@ def plot_route(data, route):
     for i in range(len(route) - 1):
         start_point = coordinates[route[i]]
         end_point = coordinates[route[i + 1]]
-        ax.plot([start_point[0], end_point[0]], [start_point[1], end_point[1]], 'r-')
+        ax.plot([start_point[0], end_point[0]], [
+                start_point[1], end_point[1]], 'r-')
 
     plt.show()
+
 
 def main():
     """Entry point of the program."""
@@ -124,6 +131,7 @@ def main():
         plot_route(data, route)
     else:
         print("No solution found !")
+
 
 if __name__ == "__main__":
     main()

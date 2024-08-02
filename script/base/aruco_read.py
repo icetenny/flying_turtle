@@ -1,6 +1,7 @@
 import cv2
 import cv2.aruco as aruco
 
+
 def list_cameras():
     arr = []
     for index in range(10):
@@ -28,6 +29,7 @@ def list_cameras():
         else:
             return arr[cam_index]
     # return arr
+
 
 # List available cameras
 chosen_camera = list_cameras()
@@ -71,7 +73,7 @@ while True:
     # Draw the detected markers on the frame
     if ids is not None:
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
-        
+
         # Print detected marker IDs and their corners
         print("Detected markers:")
         for i, marker_id in enumerate(ids):

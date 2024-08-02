@@ -2,6 +2,7 @@ import cv2
 import cv2.aruco as aruco
 import numpy as np
 
+
 def list_cameras():
     arr = []
     for index in range(10):
@@ -28,6 +29,7 @@ def list_cameras():
             exit()
         else:
             return arr[cam_index]
+
 
 # List available cameras
 chosen_camera = list_cameras()
@@ -69,12 +71,13 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect the markers in the image
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(
+        gray, aruco_dict, parameters=parameters)
 
     # Draw the detected markers on the frame
     if ids is not None:
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
-        
+
         # Print detected marker IDs and their corners
         print("Detected markers:")
         for i, marker_id in enumerate(ids):
@@ -82,11 +85,13 @@ while True:
             print(f"Corners: {corners[i][0]}")
 
             # Estimate pose of each marker
-            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], 0.05, camera_matrix, dist_coeffs)
-            
+            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(
+                corners[i], 0.05, camera_matrix, dist_coeffs)
+
             # Draw axis for the marker
             # aruco.drawAxis(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.1)
-            cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.03)
+            cv2.drawFrameAxes(frame, camera_matrix,
+                              dist_coeffs, rvec, tvec, 0.03)
             # Convert rotation vector to rotation matrix
             rmat = cv2.Rodrigues(rvec[0])[0]
 
@@ -96,11 +101,13 @@ while True:
             # Convert the angle to degrees
             angle_deg = np.degrees(theta)
 
-            print(f'Marker ID: {marker_id[0]}, Rotation Angle: {angle_deg:.2f} degrees')
+            print(
+                f'Marker ID: {marker_id[0]}, Rotation Angle: {angle_deg:.2f} degrees')
 
             # Display the rotation angle on the frame
-            cv2.putText(frame, f'ID: {marker_id[0]}, Angle: {angle_deg:.2f}', 
-                        (int(corners[i][0][0][0]), int(corners[i][0][0][1]) - 10), 
+            cv2.putText(frame, f'ID: {marker_id[0]}, Angle: {angle_deg:.2f}',
+                        (int(corners[i][0][0][0]), int(
+                            corners[i][0][0][1]) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
 
     # Display the resulting frame

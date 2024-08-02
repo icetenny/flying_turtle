@@ -9,14 +9,15 @@ import math
 import numpy as np
 from flying_turtle.msg import ArucoMarker, ArucoMarkers, Point
 
+
 def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, dist_coeffs):
     # Define the 3D coordinates of the marker corners in its own coordinate system
     # Assuming the marker is centered at the origin
     half_marker_length = marker_length / 2.0
     obj_points = np.array([
         [-half_marker_length,  half_marker_length, 0],
-        [ half_marker_length,  half_marker_length, 0],
-        [ half_marker_length, -half_marker_length, 0],
+        [half_marker_length,  half_marker_length, 0],
+        [half_marker_length, -half_marker_length, 0],
         [-half_marker_length, -half_marker_length, 0]
     ], dtype=np.float32)
 
@@ -27,7 +28,8 @@ def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, di
     # Loop through each detected marker
     for corner in corners:
         # Solve PnP to get rotation and translation vectors
-        ret, rvec, tvec = cv2.solvePnP(obj_points, corner, camera_matrix, dist_coeffs)
+        ret, rvec, tvec = cv2.solvePnP(
+            obj_points, corner, camera_matrix, dist_coeffs)
         if ret:
             rvecs.append(rvec)
             tvecs.append(tvec)
@@ -42,9 +44,11 @@ def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, di
 
     return angle_deg
 
+
 def path_sequence_callback(data):
     global path_sequence
     path_sequence = data
+
 
 def plot_route(path_sequence: ArucoMarkers, frame):
     marker_list = path_sequence.marker_list
@@ -61,10 +65,13 @@ def plot_route(path_sequence: ArucoMarkers, frame):
         for i in range(len(marker_list) - 1):
             start_point = marker_list[i].corners[0]
             end_point = marker_list[i+1].corners[0]
-            cv2.putText(frame, str(i), (start_point.x, start_point.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
-            cv2.line(frame, (start_point.x, start_point.y), (end_point.x, end_point.y), (0, 0, 255), 2)
+            cv2.putText(frame, str(i), (start_point.x, start_point.y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(frame, (start_point.x, start_point.y),
+                     (end_point.x, end_point.y), (0, 0, 255), 2)
 
         return frame
+
 
 def main():
     global path_sequence
@@ -89,11 +96,10 @@ def main():
     aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
     aruco_detector = aruco.ArucoDetector(aruco_dict, parameters)
 
-
     # Camera calibration parameters (Need Calibration**)
     camera_matrix = np.array([[1000, 0, 320],
-                            [0, 1000, 240],
-                            [0, 0, 1]], dtype=np.float32)
+                              [0, 1000, 240],
+                              [0, 0, 1]], dtype=np.float32)
     dist_coeffs = np.zeros((5, 1))  # Assuming no lens distortion
 
     # List available cameras
@@ -102,15 +108,14 @@ def main():
     cap = cv2.VideoCapture(chosen_camera)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-    
-    goal_pub = rospy.Publisher('/flying_turtle/detected_aruco', ArucoMarkers, queue_size=10)
+
+    goal_pub = rospy.Publisher(
+        '/flying_turtle/detected_aruco', ArucoMarkers, queue_size=10)
 
     rospy.Subscriber(
         '/flying_turtle/path_sequence', ArucoMarkers, path_sequence_callback)
 
-
-    rate = rospy.Rate(10) # 10hz
-
+    rate = rospy.Rate(10)  # 10hz
 
     while not rospy.is_shutdown():
         # Capture frame-by-frame
@@ -136,7 +141,8 @@ def main():
             for id, id_corners in zip(ids.flatten(), corners):
                 detected_aruco = ArucoMarker(id=id)
                 for coord_corner in id_corners[0]:
-                    point = Point(x=int(coord_corner[0]), y=int(coord_corner[1]))
+                    point = Point(
+                        x=int(coord_corner[0]), y=int(coord_corner[1]))
                     detected_aruco.corners.append(point)
 
                 # # Estimate pose of each marker
@@ -152,15 +158,17 @@ def main():
                 # # Convert the angle to degrees
                 # angle_deg = np.degrees(theta)
 
-                angle_deg = estimate_pose_single_markers_angle(id_corners, 0.05, camera_matrix, dist_coeffs)
+                angle_deg = estimate_pose_single_markers_angle(
+                    id_corners, 0.05, camera_matrix, dist_coeffs)
 
                 detected_aruco.z_rotation = angle_deg
 
                 # Display the rotation angle on the frame
-                cv2.putText(frame, f'Z-Angle: {angle_deg:.2f}', 
-                            (int(id_corners[0][0][0]), int(id_corners[0][0][1]) - 10), 
+                cv2.putText(frame, f'Z-Angle: {angle_deg:.2f}',
+                            (int(id_corners[0][0][0]), int(
+                                id_corners[0][0][1]) - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-                
+
                 plot_route(path_sequence=path_sequence, frame=frame)
                 aruco_list.marker_list.append(detected_aruco)
 

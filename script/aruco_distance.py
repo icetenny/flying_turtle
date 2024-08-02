@@ -24,7 +24,7 @@ def calculate_real_distance(px1, py1, px2, py2, w2h_ratio, resolution, known_hei
     dH = (py2 - py1) / pxH * real_height
 
     # Calculate real-life distance between the two points
-    real_distance = math.sqrt(dW**2 + dH **2)
+    real_distance = math.sqrt(dW**2 + dH ** 2)
 
     return dW, dH, real_distance
 
@@ -36,8 +36,10 @@ def main():
     width2distance_ratio = 91 / 67  # Ratio of width to distance of cam
 
     # Get ArUco IDs from ROS parameters
-    known_distance = rospy.get_param('/flying_turtle/drone_height', 1.5)  # Known distance from camera to the plane of the points
-    turtlebot_aruco_id = rospy.get_param('/flying_turtle//turtlebot_aruco_id', 971)
+    # Known distance from camera to the plane of the points
+    known_distance = rospy.get_param('/flying_turtle/drone_height', 1.5)
+    turtlebot_aruco_id = rospy.get_param(
+        '/flying_turtle//turtlebot_aruco_id', 971)
     target_aruco_id = rospy.get_param('/flying_turtle//target_aruco_id', 212)
 
     # Initialize the detector parameters using default values
@@ -64,15 +66,14 @@ def main():
 
     # rospy.Subscriber(
     #         '/amcl_pose', PoseWithCovarianceStamped, pose_callback)
-    
+
     # rospy.Subscriber(
     #         '/initialpose', PoseWithCovarianceStamped, initial_callback)
-    
-    goal_pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
 
+    goal_pub = rospy.Publisher(
+        '/move_base_simple/goal', PoseStamped, queue_size=10)
 
-    rate = rospy.Rate(10) # 10hz
-
+    rate = rospy.Rate(10)  # 10hz
 
     while not rospy.is_shutdown():
         # Capture frame-by-frame
@@ -85,7 +86,8 @@ def main():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         # Detect the markers in the image
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(
+            gray, aruco_dict, parameters=parameters)
 
         # Draw the detected markers on the frame
         if ids is not None:
@@ -95,10 +97,11 @@ def main():
             if turtlebot_aruco_id in corners_dict and target_aruco_id in corners_dict:
                 turtlebot_corner_coord = corners_dict[turtlebot_aruco_id][0][0]
                 target_corner_coord = corners_dict[target_aruco_id][0][0]
-                ttb2target_distance = calculate_real_distance(*turtlebot_corner_coord, *target_corner_coord, w2h_ratio=width2distance_ratio, resolution=resolution, known_height=known_distance)
+                ttb2target_distance = calculate_real_distance(
+                    *turtlebot_corner_coord, *target_corner_coord, w2h_ratio=width2distance_ratio, resolution=resolution, known_height=known_distance)
                 rospy.loginfo("Estimated distance: %s", ttb2target_distance)
 
-                x, y, rz, rw = 0,0,0,0
+                x, y, rz, rw = 0, 0, 0, 0
                 pub_goal = PoseStamped()
                 pub_goal.header.stamp = rospy.Time.now()
                 pub_goal.header.frame_id = "map"
