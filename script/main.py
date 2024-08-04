@@ -10,6 +10,7 @@ import numpy as np
 from flying_turtle.msg import *
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib_msgs.msg import GoalStatusArray, GoalID
 
 
 class FlyingTurtle():
@@ -32,9 +33,12 @@ class FlyingTurtle():
 
         rospy.Subscriber(
             '/flying_turtle/drone_height', Float32, self.height_callback)
+        rospy.Subscriber('/move_base/status', GoalStatusArray,
+                         self.move_base_status_callback)
 
         self.goal_pub = rospy.Publisher(
             '/move_base_simple/goal', PoseStamped, queue_size=10)
+        self.goal_reached = False
 
     def height_callback(self, data):
         self.drone_height = data.data
@@ -52,11 +56,11 @@ class FlyingTurtle():
             print("What?")
             return
 
-        for goal_marker in turtlebot_marker[1:-1]:
+        for goal_marker in marker_list[1:-1]:
 
             dW, dH, real_distance = self.calculate_real_distance(
                 self.turtlebot_marker, goal_marker)
-            print(dW, dH, real_distance)
+            # print(dW, dH, real_distance)
 
             # Transform goal position to account for turtlebot's orientation
             x_goal = dW * np.cos(self.turtlebot_marker.z_rotation) - \
@@ -82,8 +86,8 @@ class FlyingTurtle():
 
     def calculate_real_distance(self, marker1: ArucoMarker, marker2: ArucoMarker):
 
-        px1, py1 = marker1.corners[0].x, marker1.corners[0].y
-        px2, py2 = marker2.corners[0].x, marker2.corners[0].y
+        px1, py1 = marker1.center.x, marker1.center.y
+        px2, py2 = marker2.center.x, marker2.center.y
         # Unpack resolution
         pxW, pxH = self.resolution
 
@@ -102,7 +106,8 @@ class FlyingTurtle():
 
         return dW, dH, real_distance
 
-    def move_to_goal(x, y, w):
+    def move_to_goal(self, x, y, w):
+        print("Moving to", x, y, w)
         client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         client.wait_for_server()
 
@@ -121,6 +126,56 @@ class FlyingTurtle():
         else:
             return client.get_result()
 
+    def move_to_goal2(self, x, y, w):
+        self.goal_reached = False
+        pub_goal = PoseStamped()
+        pub_goal.header.stamp = rospy.Time.now()
+        pub_goal.header.frame_id = "map"
+
+        pub_goal.pose.position.x = x
+        pub_goal.pose.position.y = y
+
+        # pub_goal.pose.orientation.z = rz
+        pub_goal.pose.orientation.w = w
+
+        rospy.loginfo(f"Sending goal point: ({x})")
+        for _ in range(3):
+            self.goal_pub.publish(pub_goal)
+            self.goal_reached = False
+
+        rospy.sleep(2)
+        self.goal_reached = False
+
+    # def is_stop(self):
+    #     return self.cmd_vel.linear.x == 0 and self.cmd_vel.angular.z == 0
+
+    # def at_goal(self, tolerance=0.4):
+    #     if self.last_goal:
+    #         pose1 = self.last_goal
+    #         pose2 = self.amcl_pose
+
+    #         dx = pose1[0] - pose2[0]
+    #         dy = pose1[1] - pose2[1]
+    #         distance = math.sqrt(dx**2 + dy**2)
+
+    #         print(distance)
+
+    #         if distance <= tolerance:
+    #             return True
+
+    #     return False
+
+    def move_base_status_callback(self, msg):
+        if msg.status_list:
+            goal_status = msg.status_list[0].status
+            if goal_status == 3:
+                if not self.goal_reached:
+                    print("GOAL REACHED")
+                    self.goal_reached = True
+
+            elif goal_status == 1:
+                self.goal_reached = False
+
 
 def main():
     myturtle = FlyingTurtle()
@@ -131,12 +186,17 @@ def main():
 
         if myturtle.goal_sequence:
             for goal in myturtle.goal_sequence:
-                result = myturtle.move_to_goal(
+                myturtle.goal_reached = False
+                myturtle.move_to_goal2(
                     goal.pose.position.x, goal.pose.position.y, goal.pose.orientation.w)
-                if result:
-                    rospy.loginfo("Goal execution done!")
-                else:
-                    rospy.loginfo("Failed to reach goal")
+
+                while not myturtle.goal_reached:
+                    pass
+                    # print("Goal not Reach")
+                # if result:
+                #     rospy.loginfo("Goal execution done!")
+                # else:
+                #     rospy.loginfo("Failed to reach goal")
 
         rate.sleep()
 

@@ -63,8 +63,8 @@ def plot_route(path_sequence: ArucoMarkers, frame):
 
         # Plot path
         for i in range(len(marker_list) - 1):
-            start_point = marker_list[i].corners[0]
-            end_point = marker_list[i+1].corners[0]
+            start_point = marker_list[i].center
+            end_point = marker_list[i+1].center
             cv2.putText(frame, str(i), (start_point.x, start_point.y),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2, cv2.LINE_AA)
             cv2.line(frame, (start_point.x, start_point.y),
@@ -139,11 +139,23 @@ def main():
             frame = aruco.drawDetectedMarkers(frame, corners, ids)
 
             for id, id_corners in zip(ids.flatten(), corners):
+                if id == 0:
+                    continue
                 detected_aruco = ArucoMarker(id=id)
+                coor_x = []
+                coor_y = []
                 for coord_corner in id_corners[0]:
+                    coord_center = []
                     point = Point(
                         x=int(coord_corner[0]), y=int(coord_corner[1]))
                     detected_aruco.corners.append(point)
+                    coor_x.append(int(coord_corner[0]))
+                    coor_y.append(int(coord_corner[1]))
+                coord_center.append(np.mean(coor_x))
+                coord_center.append(np.mean(coor_y))
+                cpoint = Point(
+                    x=int(coord_center[0]), y=int(coord_center[1]))
+                detected_aruco.center = cpoint
 
                 # # Estimate pose of each marker
                 # rvec, tvec, _ = aruco.estimatePoseSingleMarkers(id_corners, 0.05, camera_matrix, dist_coeffs)

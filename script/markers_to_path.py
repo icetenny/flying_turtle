@@ -36,11 +36,11 @@ def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
             turtlebot_index = i
         # if marker_id not in index_list:
         index_list.append(marker_id)
-        coor.append([from_marker.corners[0].x, from_marker.corners[0].y])
+        coor.append([from_marker.center.x, from_marker.center.y])
 
         for to_marker in marker_list.marker_list:
             row.append(get_distance(
-                from_marker.corners[0], to_marker.corners[0]))
+                from_marker.center, to_marker.center))
         distance_matrix.append(row)
 
     # Create data model
