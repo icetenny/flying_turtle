@@ -3,7 +3,7 @@
   <arg name="model" default="burger" />
   <arg name="open_rviz" default="false" />
   <arg name="move_forward_only" default="false" />
-  <arg name="run_navigation" default="true" />
+  <arg name="run_navigation" default="false" />
   
   <group if="$(arg run_navigation)">
     <!-- <arg name="map_file" default="$(find final)/maps/map_1.yaml" /> -->
@@ -33,13 +33,12 @@
   </group>
 
   <group ns="/flying_turtle">
-    <param name="turtlebot_aruco_id" value="971" />
-    <param name="target_aruco_id" value="212" />
+    <param name="turtlebot_aruco_id" value="212" />
     <param name="camera_index " value="0" />
     <node ns="/flying_turtle" name="aruco_reader" pkg="flying_turtle" type="aruco_reader.py"
       output="screen" />
     <node ns="/flying_turtle" name="markers_to_path" pkg="flying_turtle" type="markers_to_path.py" output="screen" />
-    <node ns="/flying_turtle" name="main" pkg="flying_turtle" type="main.py" output="screen" />
+    <!-- <node ns="/flying_turtle" name="main" pkg="flying_turtle" type="main.py" output="screen" /> -->
 
   </group>
 

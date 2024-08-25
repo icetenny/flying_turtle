@@ -36,11 +36,11 @@ def create_data_model(turtlebot_aruco_id: int, marker_list: ArucoMarkers):
             turtlebot_index = i
         # if marker_id not in index_list:
         index_list.append(marker_id)
-        coor.append([from_marker.center.x, from_marker.center.y])
+        coor.append([from_marker.real_coord.x, from_marker.real_coord.y])
 
         for to_marker in marker_list.marker_list:
             row.append(get_distance(
-                from_marker.center, to_marker.center))
+                from_marker.real_coord, to_marker.real_coord))
         distance_matrix.append(row)
 
     # Create data model
@@ -102,7 +102,7 @@ def markers_to_path_callback(msg: ArucoMarkers):
     """Entry point of the program."""
     # Instantiate the data problem.
 
-    depot_point = rospy.get_param('/flying_turtle/turtlebot_aruco_id', 971)
+    depot_point = rospy.get_param('/flying_turtle/turtlebot_aruco_id', 212)
     data = create_data_model(depot_point, marker_list=msg)
 
     if data["depot"] == -1:
