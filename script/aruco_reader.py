@@ -160,7 +160,7 @@ def project_to_plane(p_x, p_y, K, R, T, plane_normal=[0, 0, 1], plane_d=0):
 
 def drone_height_callback(msg: Range):
     global camera_height, CAM_HEIGHT_CONST
-    detect_range = Range.range
+    detect_range = msg.range
     camera_height = detect_range - CAM_HEIGHT_CONST
 
 
