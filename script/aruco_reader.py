@@ -165,7 +165,7 @@ def drone_height_callback(msg: Range):
 
 
 def main():
-    global path_sequence, camera_height, CAM_HEIGHT_CAM
+    global path_sequence, camera_height, CAM_HEIGHT_CONST
     path_sequence = ArucoMarkers()
     camera_height = 0.87
     CAM_HEIGHT_CONST = 0.0
