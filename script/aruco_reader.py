@@ -8,6 +8,7 @@ import cv2.aruco as aruco
 import math
 import numpy as np
 from flying_turtle.msg import ArucoMarker, ArucoMarkers, Point
+from sensor_msgs.msg import Range
 
 
 def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, dist_coeffs):
@@ -157,16 +158,17 @@ def project_to_plane(p_x, p_y, K, R, T, plane_normal=[0, 0, 1], plane_d=0):
     return P
 
 
-def drone_height_callback(msg):
+def drone_height_callback(msg: Range):
     global camera_height, CAM_HEIGHT_CONST
-    camera_height = msg.data - CAM_HEIGHT_CONST
+    detect_range = Range.range
+    camera_height = detect_range - CAM_HEIGHT_CONST
 
 
 def main():
     global path_sequence, camera_height, CAM_HEIGHT_CAM
     path_sequence = ArucoMarkers()
     camera_height = 0.87
-    CAM_HEIGHT_CONST = 0.1
+    CAM_HEIGHT_CONST = 0.0
 
     rospy.init_node("aruco_reader", anonymous=True)
 
@@ -197,9 +199,9 @@ def main():
                               [0, 1361.52, 540],
                               [0, 0, 1]], dtype=np.float32)
     dist_coeffs = np.zeros((5, 1))  # Assuming no lens distortion
-
     # List available cameras
-    chosen_camera = rospy.get_param('/camera_index', 2)
+    chosen_camera = rospy.get_param('/flying_turtle/camera_index', 2)
+    print("Chosen Camera: ", chosen_camera)
     camera_angle_x = rospy.get_param('/camera_angle_x', 0)
     camera_angle_y = rospy.get_param('/camera_angle_y', 0)
     turtlebot_aruco_id = rospy.get_param(
@@ -221,7 +223,7 @@ def main():
     rospy.Subscriber(
         '/flying_turtle/path_sequence', ArucoMarkers, path_sequence_callback)
     rospy.Subscriber(
-        '/flying_turtle/drone_height', Int32, drone_height_callback)
+        '/mavros/px4flow/ground_distance', Range, drone_height_callback)
 
     rate = rospy.Rate(10)  # 10hz
 

@@ -48,7 +48,7 @@ def path_sequence_callback(msg: ArucoMarkers):
 
 
 def timer_callback(event):
-    global new_data_received, aruco_list, turtlebot_real_coord, map_data, turtle_bot_angle
+    global new_data_received, aruco_list, turtlebot_real_coord, map_data, turtle_bot_angle, SAVE_PLOT_NAME, SAVE_DATA_NAME
     data_list = []
 
     marker_list = aruco_list.marker_list
@@ -70,35 +70,36 @@ def timer_callback(event):
             rot_map_x, rot_map_y = rotate_point(
                 (map_x, map_y), turtlebot_origin, turtle_bot_angle)
 
-            plt.plot(rot_map_x, rot_map_y, 'x',
-                     color=map_data[id]['plot_color'])
+            if map_data.get(id):
+                plt.plot(rot_map_x, rot_map_y, 'x',
+                         color=map_data[id]['plot_color'])
 
-            x_list.append(rot_map_x)
-            y_list.append(rot_map_y)
-            print(map_x, map_y, rot_map_x, rot_map_y)
-            # end_point = marker_list[i+1].real_coord
+                x_list.append(rot_map_x)
+                y_list.append(rot_map_y)
+                print(map_x, map_y, rot_map_x, rot_map_y)
+                # end_point = marker_list[i+1].real_coord
 
-            data_dict = {'id': id,
-                         'pixel_x': marker.center.x,
-                         'pixel_y': marker.center.y,
-                         'real_coord_x': marker.real_coord.x,
-                         'real_coord_y': marker.real_coord.y,
-                         'map_coord_x': map_x,
-                         'map_coord_y': map_y,
-                         'final_coord_x': rot_map_x,
-                         'final_coord_y': rot_map_y,
-                         'z_rotation': marker.z_rotation}
+                data_dict = {'id': id,
+                             'pixel_x': marker.center.x,
+                             'pixel_y': marker.center.y,
+                             'real_coord_x': marker.real_coord.x,
+                             'real_coord_y': marker.real_coord.y,
+                             'map_coord_x': map_x,
+                             'map_coord_y': map_y,
+                             'final_coord_x': rot_map_x,
+                             'final_coord_y': rot_map_y,
+                             'z_rotation': marker.z_rotation}
 
-            data_list.append(data_dict)
+                data_list.append(data_dict)
 
         # plt.plot(x_list, y_list, 'x')
 
         new_data_received = False
 
         # Save the current plot as an image
-        plt.savefig('test1.png')
+        plt.savefig(SAVE_PLOT_NAME)
 
-        with open('test.yaml', "a") as file:
+        with open(SAVE_DATA_NAME, "a") as file:
             # Write the dictionary to the file in YAML format
             d_file = {"map_data": map_data,
                       "camera_height": camera_height, "results": data_list}
@@ -121,16 +122,20 @@ def listener():
 
 
 if __name__ == '__main__':
+    SAVE_PLOT_NAME = "plot_results.png"
+    SAVE_DATA_NAME = "results.yaml"
+    MAP_DATA = "map.txt"
+
     color_rank = ['black'] + ['C' + str(i) for i in range(10)]
     # Initialize ROS package manager
     map_name = rospy.get_param('/flying_turtle/map_name', 'map1.txt')
 
-    rospkg = rospkg.RosPack()
-    # Get the path to the 'flying_turtle' package
-    package_path = rospkg.get_path('flying_turtle')
+    # rospkg = rospkg.RosPack()
+    # # Get the path to the 'flying_turtle' package
+    # package_path = rospkg.get_path('flying_turtle')
 
-    # Define the relative path to the map1.txt file
-    map_file_path = os.path.join(package_path, 'map', map_name)
+    # # Define the relative path to the map1.txt file
+    # map_file_path = os.path.join(package_path, 'map', map_name)
 
     # Initialize an empty list to store the path points
     aruco_list = ArucoMarkers()
@@ -140,24 +145,29 @@ if __name__ == '__main__':
 
     map_config = dict()
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(8, 8))
     plt.xlim(0, 4)
     plt.ylim(0, 4)
 
-    plt.title('Real-time Path Plot')
-    plt.xlabel('X Position')
-    plt.ylabel('Y Position')
+    plt.title('Goal vs Predicted')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    plt.grid(True)
 
     map_data = dict()
     # Read the content of the file
-    with open(map_file_path, 'r') as file:
+    with open(MAP_DATA, 'r') as file:
         for n, md in enumerate(file.readlines()):
             mid, mx, my = [float(i) for i in md.strip().split()]
             # map_data[int(mid)] = ((mx, my), color_rank[n])
             map_data[int(mid)] = {'x': mx, 'y': my,
                                   'plot_color': color_rank[n]}
 
-            plt.plot(mx, my, 'o', color=color_rank[n])
+            plt.plot(mx, my, 'o', color=color_rank[n], label=str(int(mid)))
+
+        plt.legend()
+        plt.savefig(SAVE_PLOT_NAME)
 
     # Print the content of the file
     print(map_data)
@@ -167,7 +177,7 @@ if __name__ == '__main__':
     turtlebot_real_coord = Point()
     turtle_bot_angle = 0
 
-    with open('test.yaml', "w") as file:
+    with open(SAVE_DATA_NAME, "w") as file:
         file.close()
 
     # x_gt = [p[0][0] for p in map_data.values()]
