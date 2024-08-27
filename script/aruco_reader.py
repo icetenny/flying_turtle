@@ -235,6 +235,7 @@ def main():
         aruco_list.header = Header()
         aruco_list.header.stamp = rospy.Time.now()
         aruco_list.camera_height = camera_height
+        print(aruco_list.camera_height)
 
         if not ret:
             break
