@@ -33,8 +33,11 @@
   </group>
 
   <group ns="/flying_turtle">
-    <param name="turtlebot_aruco_id" value="212" />
+    <param name="turtlebot_aruco_id" value="117" />
     <param name="camera_index " value="0" />
+    <param name="/camera_angle_x" value="0" />
+    <param name="/camera_angle_y" value="0" />
+
     <node ns="/flying_turtle" name="aruco_reader" pkg="flying_turtle" type="aruco_reader.py"
       output="screen" />
     <node ns="/flying_turtle" name="markers_to_path" pkg="flying_turtle" type="markers_to_path.py" output="screen" />

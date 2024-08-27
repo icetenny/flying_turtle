@@ -202,8 +202,8 @@ def main():
     # List available cameras
     chosen_camera = rospy.get_param('/flying_turtle/camera_index', 2)
     print("Chosen Camera: ", chosen_camera)
-    camera_angle_x = rospy.get_param('/camera_angle_x', 0)
-    camera_angle_y = rospy.get_param('/camera_angle_y', 0)
+    camera_angle_x = rospy.get_param('/flying_turtle/camera_angle_x', 0)
+    camera_angle_y = rospy.get_param('/flying_turtle/camera_angle_y', 0)
     turtlebot_aruco_id = rospy.get_param(
         '/flying_turtle/turtlebot_aruco_id', 212)
 
@@ -234,6 +234,7 @@ def main():
         aruco_list = ArucoMarkers()
         aruco_list.header = Header()
         aruco_list.header.stamp = rospy.Time.now()
+        aruco_list.camera_height = camera_height
 
         if not ret:
             break
@@ -334,8 +335,6 @@ def main():
 
                 plot_route(path_sequence=path_sequence, frame=frame)
                 aruco_list.marker_list.append(detected_aruco)
-
-                aruco_list.camera_height = camera_height
 
             # print(aruco_list.marker_list)
 

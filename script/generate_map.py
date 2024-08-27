@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # IDS = [212, 56, 987, 785]
-IDS = [117, 314, 856, 1014]
+IDS = [117, 314, 454, 856, 1014]
 MAP_NAME = 'map.txt'
 MAP_PLOT_NAME = 'map_gt.png'
 
