@@ -145,6 +145,10 @@ def markers_to_path_callback(msg: ArucoMarkers):
         route = print_solution(data, manager, routing, solution)
         # plot_route(data, route)
         pub_route = ArucoMarkers()
+        pub_route.header = Header()
+        pub_route.header.stamp = rospy.Time.now()
+        pub_route.camera_height = msg.camera_height
+
         for r in route:
             pub_route.marker_list.append(msg.marker_list[r])
         goal_pub.publish(pub_route)

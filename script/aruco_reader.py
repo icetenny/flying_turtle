@@ -162,12 +162,13 @@ def drone_height_callback(msg: Range):
     global camera_height, CAM_HEIGHT_CONST
     detect_range = msg.range
     camera_height = detect_range - CAM_HEIGHT_CONST
+    print('New Camera Height:', camera_height)
 
 
 def main():
     global path_sequence, camera_height, CAM_HEIGHT_CONST
     path_sequence = ArucoMarkers()
-    camera_height = 0.87
+    camera_height = 0.0
     CAM_HEIGHT_CONST = 0.0
 
     rospy.init_node("aruco_reader", anonymous=True)
