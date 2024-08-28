@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import rospy
 import cv2
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 
 
@@ -11,7 +11,8 @@ def publish_webcam():
     rospy.init_node('webcam_publisher', anonymous=True)
 
     # Create a publisher for the image topic
-    image_pub = rospy.Publisher('webcam/image_raw', Image, queue_size=10)
+    image_pub = rospy.Publisher(
+        'webcam/compressed', CompressedImage, queue_size=1)
 
     # Create a CvBridge object to convert OpenCV images to ROS Image messages
     bridge = CvBridge()
@@ -43,11 +44,11 @@ def publish_webcam():
 
         try:
             # Convert the OpenCV image to a ROS Image message
-            ros_image = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            ros_image = bridge.cv2_to_compressed_imgmsg(frame)
 
             # Publish the image
             image_pub.publish(ros_image)
-            rospy.loginfo("Published webcam image to topic 'webcam/image_raw'")
+            rospy.loginfo("Published webcam image to topic 'webcam/compressed")
         except CvBridgeError as e:
             rospy.logerr("CvBridgeError: {}".format(e))
 
