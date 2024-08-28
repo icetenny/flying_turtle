@@ -10,7 +10,7 @@ from sensor_msgs.msg import Range
 camera_height = 0
 
 
-def drone_height_callback(msg: Range):
+def drone_height_callback(msg):
     global camera_height
     detect_range = msg.range
     camera_height = detect_range
