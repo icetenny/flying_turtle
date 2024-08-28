@@ -13,7 +13,7 @@ class VideoSaver:
 
         # Video settings
         self.video_filename = "output_video.avi"
-        self.frame_rate = 1  # Frames per second
+        self.frame_rate = 30  # Frames per second
         self.codec = cv2.VideoWriter_fourcc(*'XVID')
 
         # Open the camera

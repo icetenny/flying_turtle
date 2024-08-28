@@ -49,7 +49,7 @@ parameters.minMarkerDistanceRate = 0.05
 
 # Load the dictionary that was used to generate the markers.
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
-aruco_detector = aruco.detectMarkers(aruco_dict, parameters)
+aruco_detector = aruco.ArucoDetector(aruco_dict, parameters)
 
 # Start the video capture
 cap = cv2.VideoCapture(chosen_camera)

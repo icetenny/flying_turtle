@@ -162,7 +162,6 @@ def drone_height_callback(msg: Range):
     global camera_height, CAM_HEIGHT_CONST
     detect_range = msg.range
     camera_height = detect_range - CAM_HEIGHT_CONST
-    print('New Camera Height:', camera_height)
 
 
 def main():
