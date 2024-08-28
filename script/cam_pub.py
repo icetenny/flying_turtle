@@ -1,18 +1,35 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import rospy
 import cv2
 from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
+from flying_turtle.msg import CamHeight
+from sensor_msgs.msg import Range
+
+camera_height = 0
+
+
+def drone_height_callback(msg: Range):
+    global camera_height
+    detect_range = msg.range
+    camera_height = detect_range
 
 
 def publish_webcam():
+    global camera_height
     # Initialize the ROS node
     rospy.init_node('webcam_publisher', anonymous=True)
 
     # Create a publisher for the image topic
+    # image_pub = rospy.Publisher(
+    #     'webcam/compressed', CompressedImage, queue_size=1)
+
     image_pub = rospy.Publisher(
-        'webcam/compressed', CompressedImage, queue_size=1)
+        'webcam/cam_and_height', CamHeight, queue_size=1)
+
+    rospy.Subscriber(
+        '/mavros/px4flow/ground_distance', Range, drone_height_callback)
 
     # Create a CvBridge object to convert OpenCV images to ROS Image messages
     bridge = CvBridge()
@@ -46,9 +63,14 @@ def publish_webcam():
             # Convert the OpenCV image to a ROS Image message
             ros_image = bridge.cv2_to_compressed_imgmsg(frame)
 
+            cam_and_height = CamHeight()
+            cam_and_height.height = camera_height
+            cam_and_height.image = ros_image
+
             # Publish the image
-            image_pub.publish(ros_image)
-            rospy.loginfo("Published webcam image to topic 'webcam/compressed")
+            image_pub.publish(cam_and_height)
+            rospy.loginfo(
+                "Published webcam image to topic 'webcam/cam_and_height")
         except CvBridgeError as e:
             rospy.logerr("CvBridgeError: {}".format(e))
 
