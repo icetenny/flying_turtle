@@ -159,7 +159,6 @@ def image_callback(msg):
     # parameters = aruco.DetectorParameters()
     parameters = aruco.DetectorParameters_create()
 
-    parameters.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
     parameters.adaptiveThreshWinSizeMin = 3
     parameters.adaptiveThreshWinSizeMax = 70
     parameters.adaptiveThreshWinSizeStep = 5
