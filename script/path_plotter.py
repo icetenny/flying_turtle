@@ -115,7 +115,7 @@ def listener():
         '/flying_turtle/path_sequence', ArucoMarkers, path_sequence_callback)
 
     # Create a ROS timer to call the timer_callback every 3 seconds
-    rospy.Timer(rospy.Duration(2), timer_callback)
+    rospy.Timer(rospy.Duration(1), timer_callback)
 
     # Keep the node running
     rospy.spin()

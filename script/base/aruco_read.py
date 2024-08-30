@@ -43,12 +43,12 @@ parameters.minMarkerPerimeterRate = 0.03
 parameters.maxMarkerPerimeterRate = 4.0
 parameters.polygonalApproxAccuracyRate = 0.03
 parameters.minCornerDistanceRate = 0.05
-parameters.minDistanceToBorder = 3
+parameters.minDistanceToBorder = 0
 parameters.minMarkerDistanceRate = 0.05
 
 
 # Load the dictionary that was used to generate the markers.
-aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 aruco_detector = aruco.ArucoDetector(aruco_dict, parameters)
 
 # Start the video capture

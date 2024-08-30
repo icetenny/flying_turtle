@@ -60,10 +60,10 @@ while True:
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # kernel = np.array([[0, -1, 0],
-    #                    [-1, 5, -1],
-    #                    [0, -1, 0]])
-    # gray = cv2.filter2D(gray, -1, kernel)
+    kernel = np.array([[0, -1, 0],
+                       [-1, 5, -1],
+                       [0, -1, 0]])
+    gray = cv2.filter2D(gray, -1, kernel)
 
     gray = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, 5)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import rospy
 import cv2
@@ -38,7 +38,7 @@ def image_callback(msg):
         rospy.signal_shutdown("User pressed 'q' key")
 
 
-def drone_height_callback(msg: Range):
+def drone_height_callback(msg):
     global camera_height
     detect_range = msg.range
     camera_height = detect_range

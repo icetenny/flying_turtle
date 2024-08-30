@@ -4,13 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # IDS = [212, 56, 987, 785]
-IDS = [117, 314, 454, 856, 1014]
+IDS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 MAP_NAME = 'map.txt'
 MAP_PLOT_NAME = 'map_gt.png'
 
 # Define the grid with step 0.2 in the range [0.2, 3.8]
-grid_x = np.arange(0.2, 4.0, 0.2)
-grid_y = np.arange(0.2, 4.0, 0.2)
+grid_x = np.arange(0.4, 3.8, 0.2)
+grid_y = np.arange(0.8, 3.4, 0.2)
 
 # Generate 4 unique random points
 points = []
