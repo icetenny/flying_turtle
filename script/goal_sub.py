@@ -113,6 +113,7 @@ def goal_callback(msg: ArucoMarkers):
         id = int(g.id)
         x, y = g.real_coord.x, g.real_coord.y
 
+        print(id, x, y)
         if coord_dict.get(id):
             coord_dict[id][0] += x
             coord_dict[id][1] += y
@@ -172,7 +173,7 @@ def start_callback(msg):
     ttb_0.id = depot_point
     markers_to_do_path.marker_list = [ttb_0]
 
-    for c_id, c_v in coord_dict:
+    for c_id, c_v in coord_dict.items():
         if c_v[2] < 10:
             continue
         c_m = ArucoMarker()
@@ -183,7 +184,6 @@ def start_callback(msg):
         markers_to_do_path.marker_list.append(c_m)
 
     if msg.data == 1:
-
         """Entry point of the program."""
         # Instantiate the data problem.
 
@@ -232,10 +232,10 @@ def start_callback(msg):
             pub_route = ArucoMarkers()
             pub_route.header = Header()
             pub_route.header.stamp = rospy.Time.now()
-            pub_route.camera_height = msg.camera_height
+            # pub_route.camera_height = msg.camera_height
 
             for r in route:
-                pub_route.marker_list.append(msg.marker_list[r])
+                pub_route.marker_list.append(markers_to_do_path.marker_list[r])
             # goal_pub.publish(pub_route)
 
             current_x, current_y, current_yaw = get_current_pose()

@@ -21,8 +21,6 @@ import numpy as np
 from flying_turtle.msg import ArucoMarker, ArucoMarkers, Point
 import yaml
 
-camera_height = 0
-
 
 def estimate_pose_single_markers_angle(corners, marker_length, camera_matrix, dist_coeffs):
     # Define the 3D coordinates of the marker corners in its own coordinate system
@@ -142,6 +140,8 @@ def rotate_point(point, pivot, angle_degrees):
 
 
 def image_callback(msg):
+
+    camera_height = msg.height
 
     resolution = (1920, 1080)
 
