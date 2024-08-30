@@ -156,7 +156,9 @@ def image_callback(msg):
         '/flying_turtle/turtlebot_aruco_id', 212)
 
     # Load the ArUco dictionary and parameters
-    parameters = aruco.DetectorParameters()
+    # parameters = aruco.DetectorParameters()
+    parameters = aruco.DetectorParameters_create()
+
     parameters.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
     parameters.adaptiveThreshWinSizeMin = 3
     parameters.adaptiveThreshWinSizeMax = 70
