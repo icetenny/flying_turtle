@@ -262,10 +262,10 @@ def image_callback(msg):
                 detected_aruco.z_rotation = angle_deg
 
                 # Display the rotation angle on the frame
-                cv2.putText(frame, f'Z-Angle: {angle_deg:.2f}',
-                            (int(id_corners[0][0][0]), int(
-                                id_corners[0][0][1]) - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+                # cv2.putText(frame, f'Z-Angle: {angle_deg:.2f}',
+                #             (int(id_corners[0][0][0]), int(
+                #                 id_corners[0][0][1]) - 10),
+                #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
                 detect_turtle = detected_aruco
 
