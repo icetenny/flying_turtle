@@ -168,8 +168,8 @@ def image_callback(msg):
     parameters.minDistanceToBorder = 0
     parameters.minMarkerDistanceRate = 0.05
 
-    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
-    aruco_detector = aruco.ArucoDetector(aruco_dict, parameters)
+    aruco_dict = aruco.Dictionary_get(aruco.DICT_ARUCO_ORIGINAL)
+    # aruco_detector = aruco.ArucoDetector(aruco_dict, parameters)
 
     # Convert the ROS Image message to an OpenCV image
     try:
@@ -194,8 +194,11 @@ def image_callback(msg):
     aruco_list.camera_height = camera_height
 
     # Detect ArUco markers in the image
-    corners, ids, rejectedImgPoints = aruco_detector.detectMarkers(
-        gray)
+    # corners, ids, rejectedImgPoints = aruco_detector.detectMarkers(
+    #     gray)
+
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(
+        gray, aruco_dict, parameters=parameters)
     # print(rejectedImgPoints)
 
     # Draw the detected markers on the image
